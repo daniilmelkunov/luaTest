@@ -66,13 +66,13 @@ end
 
 -- LIB
 
-function monthPay(summ, month, percents)
+function monthPay(sum, month, percents)
     local i = percents / 12;
     local i2 = (1 + i) ^ month;
     local up = i * i2;
     local down = i2 - 1;
     local koef = up / down;
-    return koef * summ;
+    return koef * sum;
 end
 
 function creditTypes()
@@ -86,15 +86,23 @@ function askUserInteger(message, voiced)
 end
 -- END LIB
 
+-- FILING creditOrder and validationFunction
+local creditOrder = {};
+function creditOrder:fillSum(value)
+    if(value < maxSum) then
+        
+        return true     
+    end
+end
 
 --
 
 -- MAIN
-local creditOrder = {};
-creditOrder.summ = askUserInteger(ASK_ALL_PRICE_TEXT, true);
+
+creditOrder.sum = askUserInteger(ASK_ALL_PRICE_TEXT, true);
 creditOrder.startPay = askUserInteger(ASK_START_PAY_TEXT, true);
 local awaibleTypeOfCredit = creditTypes();
-creditOrder.summ = creditOrder.summ - creditOrder.startPay;
+creditOrder.sum = creditOrder.sum - creditOrder.startPay;
 creditOrder.typeOfCredit = core:askUser(CREDIT_TARGET_TEXT .. table.concat(awaibleTypeOfCredit, "\n"), true);
 creditOrder.percents = getPercentsByType(creditOrder.typeOfCredit);
 creditOrder.paymentAtVTB = getBoolean(SALARY_IN_VTB_TEXT, true);
@@ -108,6 +116,6 @@ end
 creditOrder.years = askUserInteger(YEARS_OF_CREDIT_TEXT, true);
 creditOrder.salary = askUserInteger(MONTH_SALARY_TEXT, true);
 creditOrder.month = creditOrder.years * 12;
-core:pushUser("Предложение для вас - " .. creditOrder.summ .. " рублей на " .. creditOrder.years .. " лет" .. " со ставкой " .. creditOrder.percents * 100 .. " процентов годовых. Ежемесечный платеж составит - " .. monthPay(creditOrder.summ, creditOrder.month, creditOrder.percents));
+core:pushUser("Предложение для вас - " .. creditOrder.sum .. " рублей на " .. creditOrder.years .. " лет" .. " со ставкой " .. creditOrder.percents * 100 .. " процентов годовых. Ежемесечный платеж составит - " .. monthPay(creditOrder.sum, creditOrder.month, creditOrder.percents));
 
 -- END MAIN
