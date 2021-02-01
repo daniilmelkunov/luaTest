@@ -116,9 +116,14 @@ end
 
 --
 
+function log(msg)
+    core:pushUser("[Ответ " .. msg .. "]")
+end
+
 -- MAIN
 creditOrder:setSum(true)
-
+log(creditOrder.sum);
+creditOrder:setStartPay(true);
 local awaibleTypeOfCredit = creditTypes();
 creditOrder.sum = creditOrder.sum - creditOrder.startPay;
 creditOrder.typeOfCredit = core:askUser(CREDIT_TARGET_TEXT .. table.concat(awaibleTypeOfCredit, "\n"), true);
