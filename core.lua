@@ -97,7 +97,7 @@ local creditOrder = {};
 function creditOrder:setSum(voiced)
     local success = false;
    -- while (success ~= true) do
-        local value = askUserInteger(ASK_ALL_PRICE_TEXT, true);
+        local value = askUserInteger(ASK_ALL_PRICE_TEXT, voiced);
         if(value <= maxSum) then
             creditOrder.sum = value;
             success = true;
@@ -109,11 +109,16 @@ function creditOrder:setSum(voiced)
    -- end
 end
 
+function creditOrder:setStartPay(voiced)
+    creditOrder.startPay = askUserInteger(ASK_START_PAY_TEXT, true);
+
+end
+
 --
 
 -- MAIN
 creditOrder:setSum(true)
-creditOrder.startPay = askUserInteger(ASK_START_PAY_TEXT, true);
+
 local awaibleTypeOfCredit = creditTypes();
 creditOrder.sum = creditOrder.sum - creditOrder.startPay;
 creditOrder.typeOfCredit = core:askUser(CREDIT_TARGET_TEXT .. table.concat(awaibleTypeOfCredit, "\n"), true);
@@ -129,10 +134,20 @@ end
 creditOrder.years = askUserInteger(YEARS_OF_CREDIT_TEXT, true);
 creditOrder.salary = askUserInteger(MONTH_SALARY_TEXT, true);
 creditOrder.month = creditOrder.years * 12;
-core:pushUser("Предложение для вас - " .. creditOrder.sum .. " рублей на " .. creditOrder.years .. " лет" .. " со ставкой " .. creditOrder.percents * 100 .. " процентов годовых. Ежемесечный платеж составит - " .. monthPay(creditOrder.sum, creditOrder.month, creditOrder.percents));
-local sendOrder = getBoolean(STORE_ORDER_QUESTION , true);
+local sendOrder = getBoolean(
+    "Предложение для вас - " 
+    .. creditOrder.sum 
+    .. " рублей на " 
+    .. creditOrder.years 
+    .. " лет" 
+    .. " со ставкой " 
+    .. creditOrder.percents * 100 
+    .. " процентов годовых. Ежемесечный платеж составит - " 
+    .. monthPay(creditOrder.sum, creditOrder.month, creditOrder.percents) 
+    .. STORE_ORDER_QUESTION, true);
+--local sendOrder = getBoolean(STORE_ORDER_QUESTION , true);
 if(sendOrder) then
-   core:pushUser(ORDER_SAVED_RESPONSE);
+   core:pushUser(ORDER_SAVED_RESPONSE, true);
 end
 
 
