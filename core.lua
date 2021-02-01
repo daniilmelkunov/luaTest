@@ -1,3 +1,4 @@
+local debug = false;
 --
 -- Created by IntelliJ IDEA.
 -- User: estgold
@@ -7,7 +8,7 @@
 --
 
 -- CONST
-local debug = true;
+
 local ASK_ALL_PRICE_TEXT        = "Скажите стоимость жилья";
 local ASK_START_PAY_TEXT        = "Скажите первоначальный взнос";
 local CREDIT_TARGET_TEXT        = "Скажите цель кредита, доступные варианты \n";
@@ -15,11 +16,12 @@ local SALARY_IN_VTB_TEXT        = "Получаете зарплату в ВТБ
 local USE_MOTHER_CAPITAL_TEXT   = "Будете использовать материнский капитал?";
 local YEARS_OF_CREDIT_TEXT      = "Скажите срок кредита";
 local MONTH_SALARY_TEXT         = "Ваш ежемесячный доход";
-
+local STORE_ORDER_QUESTION      ="Хотите оставить заявку?";
+local ORDER_SAVED_RESPONSE      = "Заявка сохранена, ждите звонка оператора";
 
 --SETUP
 
-local maxSum = 10000000;
+local maxSum = 3000000;
 local maxYears = 30;
 local minStartPayPercent = 0.1;
 local maxStartPayPercent = 0.8;
@@ -28,28 +30,33 @@ local maxStartPayPercent = 0.8;
 
 --MOCK
 if(debug) then
+    local CREDIT_TARGET_TEXT2 = "Скажите цель кредита";
     core = {};
     function core:askUser(msg, voiced)
-        local s = core:askUsr(msg, voiced);
-        print("Ответ "..s);
-        return s; 
+        return core:askUsr(msg, voiced);
     end
     function core:askUsr(msg,voiced)
         print(msg);
-        if(CREDIT_TARGET_TEXT:find(msg)) then return "Вторичка" end;
-        if(USE_MOTHER_CAPITAL_TEXT:find(msg)) then return "да" end;
-        if(SALARY_IN_VTB_TEXT:find(msg)) then return "да" end;
-        return msg;
+        if(msg:find(CREDIT_TARGET_TEXT)) then return core:log("Вторичка") end;
+        if(USE_MOTHER_CAPITAL_TEXT:find(msg)) then return core:log("да") end;
+        if(SALARY_IN_VTB_TEXT:find(msg)) then return core:log("да") end;
+        return core:log(msg);
     end
     function core:extractNumbersFromString(msg, voiced)
-        if (ASK_ALL_PRICE_TEXT == msg) then return 2000000; end
-        if (ASK_START_PAY_TEXT == msg) then return 500000; end
-        if(YEARS_OF_CREDIT_TEXT == msg) then return 15; end;
-        return 50000;
+        if (ASK_ALL_PRICE_TEXT == msg) then return core:log(3200000); end
+        if (ASK_START_PAY_TEXT == msg) then return core:log(500000); end
+        if(YEARS_OF_CREDIT_TEXT == msg) then return core:log(15); end;
+        return core:log(50000);
     end
     function core:pushUser(msg, voiced)
         print(msg);
     end
+    
+    function core:log(msg, voiced)
+        if(debug) then print("[Ответ " .. msg .. "]"); end;
+        return(msg)    
+    end
+    
 end
 
 function getBoolean(message, voiced)
@@ -81,25 +88,31 @@ end
 
 function askUserInteger(message, voiced)
     local value =  core:extractNumbersFromString(core:askUser(message, voiced));
-    if(debug) then    print("Ответ " .. value); end;
     return value;
 end
 -- END LIB
 
 -- FILING creditOrder and validationFunction
 local creditOrder = {};
-function creditOrder:fillSum(value)
-    if(value < maxSum) then
-        
-        return true     
-    end
+function creditOrder:setSum(voiced)
+    local success = false;
+   -- while (success ~= true) do
+        local value = askUserInteger(ASK_ALL_PRICE_TEXT, true);
+        if(value <= maxSum) then
+            creditOrder.sum = value;
+            success = true;
+        else
+            core:pushUser("Ошибочка ещё раз")
+            creditOrder.sum = value;
+            success = false;    
+        end
+   -- end
 end
 
 --
 
 -- MAIN
-
-creditOrder.sum = askUserInteger(ASK_ALL_PRICE_TEXT, true);
+creditOrder:setSum(true)
 creditOrder.startPay = askUserInteger(ASK_START_PAY_TEXT, true);
 local awaibleTypeOfCredit = creditTypes();
 creditOrder.sum = creditOrder.sum - creditOrder.startPay;
@@ -117,5 +130,11 @@ creditOrder.years = askUserInteger(YEARS_OF_CREDIT_TEXT, true);
 creditOrder.salary = askUserInteger(MONTH_SALARY_TEXT, true);
 creditOrder.month = creditOrder.years * 12;
 core:pushUser("Предложение для вас - " .. creditOrder.sum .. " рублей на " .. creditOrder.years .. " лет" .. " со ставкой " .. creditOrder.percents * 100 .. " процентов годовых. Ежемесечный платеж составит - " .. monthPay(creditOrder.sum, creditOrder.month, creditOrder.percents));
+local sendOrder = getBoolean(STORE_ORDER_QUESTION , true);
+if(sendOrder) then
+   core:pushUser(ORDER_SAVED_RESPONSE);
+end
+
+
 
 -- END MAIN
